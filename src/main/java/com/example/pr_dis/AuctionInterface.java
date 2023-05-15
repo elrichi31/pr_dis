@@ -1,9 +1,11 @@
 package com.example.pr_dis;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -68,18 +70,31 @@ public class AuctionInterface extends Application {
         }).start();
         VBox vbox = new VBox();
         List<AuctionItem> auctionItems = AuctionItemSingleton.getInstance().getAuctionItems();
-
+        vbox.setSpacing(10);
         for (AuctionItem item : auctionItems) {
+            HBox hbox = new HBox();
+            hbox.setSpacing(10);
+            Label itemNameLabel = new Label();
+            itemNameLabel.setText(item.getName());
             Button btn = new Button();
-            btn.setText(item.getName());
+            btn.setText("Iniciar servidor");
+            Label statusLabel = new Label();  // Etiqueta para mostrar el estado
+            statusLabel.setText("Servidor no iniciado");
+
+            btn.setAlignment(Pos.CENTER);
             btn.setOnAction(event -> {
                 AuctionServer auctionServer = new AuctionServer(item);
                 new Thread(auctionServer).start();
+                statusLabel.textProperty().bind(auctionServer.getStatusProperty());  // Observa la propiedad de estado
+
             });
-            vbox.getChildren().add(btn);
+            hbox.getChildren().addAll(itemNameLabel,btn,statusLabel);
+            vbox.getChildren().add(hbox);
+
         }
         vbox.getChildren().add(clientCountLabel);
         Scene scene = new Scene(vbox, 900, 450);
+        primaryStage.setTitle("Servidor principal");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -90,9 +105,9 @@ public class AuctionInterface extends Application {
     public static void main(String[] args) {
         AuctionItemSingleton auctionItems = AuctionItemSingleton.getInstance();
 
-        AuctionItem item1 = new AuctionItem("Una pintura de Vincent Van Gogh: La Noche Estrellada", 70e6, 1444);
-        AuctionItem item2 = new AuctionItem("Un carro Ferrari clásico de los años 70", 1e6, 1555);
-        AuctionItem item3 = new AuctionItem("El manuscrito original de la obra de Isaac Newton “Principios matemáticos de la filosofía natural", 40e6, 1666);
+        AuctionItem item1 = new AuctionItem("Una pintura de Vincent Van Gogh: La Noche Estrellada", 70000000, 1444);
+        AuctionItem item2 = new AuctionItem("Un carro Ferrari clásico de los años 70", 1000000, 1555);
+        AuctionItem item3 = new AuctionItem("Isaac Newton “Principios matemáticos de la filosofía natural", 40000000, 1666);
 
         auctionItems.addAuctionItem(item1);
         auctionItems.addAuctionItem(item2);

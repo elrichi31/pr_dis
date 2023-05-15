@@ -17,6 +17,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ public class AuctionServer implements Runnable {
         this.item = item;
         serverId = serverCount++;
 
-        int port = item.getServerPort();  // Obtén el puerto del item
+        int port = item.getServerPort();
         try {
             serverSocket = new ServerSocket(port);  // Inicia el servidor en el puerto especificado
         } catch (IOException e) {
@@ -96,7 +97,8 @@ public class AuctionServer implements Runnable {
     @Override
     public void run() {
         status.set("Servidor iniciado");
-        // Implementa la lógica del servidor de subastas aquí
+        NumberFormat numberFormat = NumberFormat.getInstance();
+        String formattedAmount = numberFormat.format(item.getBasePrice());
         System.out.println("Se ha iniciado el servidor de subastas #" + serverId + " para el artículo: " + item.getName() + " en el puerto: " + serverSocket.getLocalPort());
 
         // Crea una nueva ventana (Stage) que muestra la información del artículo
@@ -104,7 +106,7 @@ public class AuctionServer implements Runnable {
             Stage itemStage = new Stage();
             VBox itemVbox = new VBox();
             Label itemName = new Label("Nombre: " + item.getName());
-            Label itemPrice = new Label("Precio base: $" + item.getBasePrice());
+            Label itemPrice = new Label("Precio base: $" + formattedAmount);
             Label itemPort = new Label("Puerto del servidor: " + serverSocket.getLocalPort());
             Button startAuctionButton = new Button("Iniciar Subasta");
             timerLabel = new Label("Temporizador: Aun no iniciado");  // Inicializa timerLabel
@@ -226,7 +228,7 @@ public class AuctionServer implements Runnable {
         Platform.runLater(() -> timerLabel.setText(String.format("Tiempo restante: %02d:%02d", minutes, seconds)));
     }
     private void restartTimer() {
-        auctionTimeRemaining = (int) Duration.seconds(45).toSeconds(); // reset the timer to 2 minutes
+        auctionTimeRemaining = (int) Duration.seconds(45).toSeconds();
         if (timer != null) {
             timer.stop();
             timer.playFromStart();
@@ -262,11 +264,14 @@ public class AuctionServer implements Runnable {
             try {
                 if (serverSocket != null && !serverSocket.isClosed()) {
                     serverSocket.close();
+                    Stage stage = (Stage) timerLabel.getScene().getWindow();
+                    stage.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+        status.set("Subasta terminada");
     }
 
 

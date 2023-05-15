@@ -28,8 +28,7 @@ public class AuctionClientServer implements Runnable {
     private Label timerLabel;  // Etiqueta para mostrar el temporizador
     private Socket socket;
     private AuctionItem item;
-    private DataInputStream dis;
-    private String res;
+    private String highBidder;
     private String clientId;
     private StringProperty status = new SimpleStringProperty("Subasta no iniciada");
     private ObjectInputStream ois;
@@ -37,6 +36,7 @@ public class AuctionClientServer implements Runnable {
     private TextArea logArea; // Área para mostrar un registro de las ofertas
     TextField bidField = new TextField();
     DecimalFormat decimalFormat = new DecimalFormat("#");
+    private int highestBid = 0;  // Inicializa la oferta más alta en 0
 
 
     public AuctionClientServer(AuctionItem item, String clientId) {
@@ -45,7 +45,6 @@ public class AuctionClientServer implements Runnable {
         this.logArea = new TextArea(); // Inicializa el área de registro
         this.logArea.setEditable(false); // El área de registro no debe ser editable
     }
-    private int highestBid = 0;  // Inicializa la oferta más alta en 0
     @Override
     public void run() {
         try {
@@ -66,7 +65,7 @@ public class AuctionClientServer implements Runnable {
                         // Verifica si el objeto es una cadena (para el estado) o una oferta
                         if (serverObject instanceof String) {
                             String serverStatus = (String) serverObject;
-                            Platform.runLater(() -> status.set(serverStatus));  // Actualiza status en el hilo de la aplicación JavaFX
+                            Platform.runLater(() -> status.set("Estado: En progreso"));  // Actualiza status en el hilo
                             String serverMessage = (String) serverObject;
                             switch (serverMessage) {
                                 case "start timer":
@@ -78,9 +77,9 @@ public class AuctionClientServer implements Runnable {
                                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                                         alert.setTitle("Subasta terminada");
                                         alert.setHeaderText(null);
-                                        alert.setContentText(serverStatus);
+                                        alert.setContentText("Subasta terminada el usuario " + highBidder + " gano la subasta con " + highestBid + " ofertados" );
                                         alert.showAndWait();
-
+                                        status.set("Estado: Terminado");
                                         // Cierra la conexión
                                         try {
                                             if (oos != null) oos.close();
@@ -101,7 +100,9 @@ public class AuctionClientServer implements Runnable {
                             highestBid = Math.max(highestBid, bid.getAmount());
                             String formattedAmount = numberFormat.format(bid.getAmount());
                             String bidInfo = "El cliente " + bid.getClientId() + " ha ofrecido: " + formattedAmount;
+                            highBidder = bid.getClientId();
                             System.out.println(bidInfo);
+                            restartTimer();
                             Platform.runLater(() -> {
                                 logArea.appendText(bidInfo + "\n");
                                 bidField.setText(Integer.toString(bid.getAmount()));
@@ -136,11 +137,6 @@ public class AuctionClientServer implements Runnable {
         int seconds = auctionTimeRemaining % 60;
         Platform.runLater(() -> timerLabel.setText(String.format("Tiempo restante: %02d:%02d", minutes, seconds)));
         auctionTimeRemaining--;
-    }
-    private void endAuction() {
-        // Muestra un mensaje indicando que la subasta ha terminado
-        System.out.println("fin");
-        // ...
     }
     private void createWindow() {
         NumberFormat numberFormat = NumberFormat.getInstance();
@@ -197,12 +193,11 @@ public class AuctionClientServer implements Runnable {
                     Bid bid = new Bid(clientId, bidAmount);
                     oos.writeObject(bid);
                     oos.flush();
-                    restartTimer();
+
 
                 } else {
                     logArea.appendText("Error: Su oferta es menor a la oferta más alta actual o menor que el precio base.\n");
                 }
-                //logArea.appendText("Oferta enviada: " + formattedAmount + "\n");
             } catch (NumberFormatException e) {
                 // La oferta ingresada no es un número válido
                 logArea.appendText("Error: La oferta debe ser un número válido.\n");
@@ -219,7 +214,7 @@ public class AuctionClientServer implements Runnable {
         itemStage.show();
     }
     private void restartTimer() {
-        auctionTimeRemaining = (int) Duration.seconds(45).toSeconds();// reset the timer to 2 minutes
+        auctionTimeRemaining = (int) Duration.seconds(45).toSeconds();
         if (timer != null) {
             timer.stop();
             timer.playFromStart();

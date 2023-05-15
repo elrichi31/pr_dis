@@ -12,7 +12,7 @@ public class AuctionClient {
 
     public void connect() {
         try {
-            socket = new Socket("localhost", 1234);  // Conéctate al servidor principal
+            socket = new Socket("localhost", 1234);
             ois = new ObjectInputStream(socket.getInputStream());
             auctionItems = (List<AuctionItem>) ois.readObject();  // Recibe los objetos de subasta del servidor
         } catch (IOException | ClassNotFoundException e) {

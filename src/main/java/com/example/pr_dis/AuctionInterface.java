@@ -5,8 +5,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import javafx.application.Platform;
@@ -50,7 +49,6 @@ public class AuctionInterface extends Application {
                         try {
                             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                             oos.writeObject(auctionItems);  // Envia los objetos de subasta al cliente
-                            // No cierra el socket ni el ObjectOutputStream aquí
                         } catch (IOException e) {
                             e.printStackTrace();
 
@@ -68,32 +66,52 @@ public class AuctionInterface extends Application {
                 e.printStackTrace();
             }
         }).start();
-        VBox vbox = new VBox();
+        GridPane gridPane = new GridPane();
+
+        Label labelName = new Label("Subasta");
+        Label labelServer = new Label("Servidor");
+        Label labelState = new Label("Estado");
+
+        labelName.setAlignment(Pos.CENTER);
+        labelServer.setAlignment(Pos.CENTER);
+        labelState.setAlignment(Pos.CENTER);
+
+        gridPane.add(labelName, 0,0);
+        gridPane.add(labelServer, 1,0);
+        gridPane.add(labelState,2,0);
+
+
         List<AuctionItem> auctionItems = AuctionItemSingleton.getInstance().getAuctionItems();
-        vbox.setSpacing(10);
-        for (AuctionItem item : auctionItems) {
-            HBox hbox = new HBox();
-            hbox.setSpacing(10);
+        gridPane.setVgap(10);
+        gridPane.setHgap(10);
+
+        for (int i = 0; i < auctionItems.size(); i++) {
+            AuctionItem item = auctionItems.get(i);
             Label itemNameLabel = new Label();
             itemNameLabel.setText(item.getName());
             Button btn = new Button();
             btn.setText("Iniciar servidor");
             Label statusLabel = new Label();  // Etiqueta para mostrar el estado
             statusLabel.setText("Servidor no iniciado");
-
             btn.setAlignment(Pos.CENTER);
             btn.setOnAction(event -> {
                 AuctionServer auctionServer = new AuctionServer(item);
                 new Thread(auctionServer).start();
                 statusLabel.textProperty().bind(auctionServer.getStatusProperty());  // Observa la propiedad de estado
-
+                btn.setDisable(true);
             });
-            hbox.getChildren().addAll(itemNameLabel,btn,statusLabel);
-            vbox.getChildren().add(hbox);
 
+
+            // Agrega los elementos a la celda correspondiente en el GridPane
+            gridPane.add(itemNameLabel, 0, i+1);
+            gridPane.add(btn, 1, i+1);
+            gridPane.add(statusLabel, 2, i+1);
         }
-        vbox.getChildren().add(clientCountLabel);
-        Scene scene = new Scene(vbox, 900, 450);
+
+        gridPane.add(clientCountLabel, 0, auctionItems.size()+1);  // Añade la etiqueta de conteo de clientes al final
+
+        Scene scene = new Scene(gridPane, 700, 250);
+
         primaryStage.setTitle("Servidor principal");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -112,8 +130,6 @@ public class AuctionInterface extends Application {
         auctionItems.addAuctionItem(item1);
         auctionItems.addAuctionItem(item2);
         auctionItems.addAuctionItem(item3);
-
-        // Ahora puedes lanzar la interfaz de usuario de JavaFX
         Application.launch(AuctionInterface.class, args);
     }
 

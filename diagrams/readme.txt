@@ -40,7 +40,8 @@ Si encuentra algún problema al ejecutar el proyecto, verifique lo siguiente:
 
 Si aún tiene problemas, abra un problema en el repositorio de GitHub del proyecto.
 
-*** Integrantes del grupo y division de trabajo ***
-Cesar Cardenas: Diagramas de clases, diagramas de casos de uso
-Alex Perez: Descripciones textuales de los casos de uso y diagramas robustos
-Nicolas Moina: Codigo de toda la aplicacion desarrollda en JavaFX
+**Integrantes del grupo y division de trabajo**
+
+* Cesar Cardenas: Diagramas de clases, diagramas de casos de uso.
+* Alex Perez: Descripciones textuales de los casos de uso y diagramas robustos.
+* Nicolas Moina: Codigo de toda la aplicacion desarrollda en JavaFX.

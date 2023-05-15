@@ -45,3 +45,7 @@ Si aún tiene problemas, abra un problema en el repositorio de GitHub del proyec
 * Cesar Cardenas: Diagramas de clases, diagramas de casos de uso.
 * Alex Perez: Descripciones textuales de los casos de uso y diagramas robustos.
 * Nicolas Moina: Codigo de toda la aplicacion desarrollda en JavaFX.
+
+**Ver diagramas**
+
+Para ver los diagramas dirigete a la carpeta de que se llama ``/diagrams`` y ahi estaran todos los diagramas del proyecto
